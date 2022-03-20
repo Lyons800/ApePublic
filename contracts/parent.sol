@@ -30,17 +30,6 @@ contract ParentContract {
     mapping (uint256 => ChildContract) public child;
     uint count;
 
-    struct Details { 
-        ChildContract childAddress;
-        address primary;
-        uint256 primaryNFT;
-        address secondary;
-        uint256 secondaryNFT;
-    }
-
-    mapping (uint => Details) public pairs;
-    uint _user;
-
     struct _BAYC { 
         address wallet;
         uint256 tokenID;
@@ -48,8 +37,20 @@ contract ParentContract {
     mapping (uint => _BAYC) public BAYC;
     uint BAYCcount;
 
+    struct _MAYC { 
+        address wallet;
+        uint256 tokenID;
+    }
+    mapping (uint => _MAYC) public MAYC;
+    uint MAYCcount;
+
+
+
     constructor() public{}
 
+
+
+    //Deposit apes into contract.
     function depositAlpha(uint256 _id) public{
         require(claimContract.alphaClaimed(_id) == false, "Token has been claimed");
 
@@ -61,38 +62,55 @@ contract ParentContract {
         ALPHA.transferFrom(msg.sender, address(this), _id);
     }
 
+    function depositBeta(uint256 _id) public{
+        require(claimContract.betaClaimed(_id) == false, "Token has been claimed");
+
+        MAYC[MAYCcount++] = _MAYC(
+            msg.sender,
+            _id
+        );
+
+        BETA.transferFrom(msg.sender, address(this), _id);
+    }
+
+    //Deposit KENNEL into contract.
+    //Creates child contract on deposit
     function depositGamma(uint256 _id) public{
         require(claimContract.gammaClaimed(_id) == false, "Token has been claimed");
         child[++count] = new ChildContract(msg.sender, _id, address(this));
 
-        pairs[count] = Details(
-            child[count],
-            msg.sender,
-            _id,
-            0x0000000000000000000000000000000000000000,
-            0
-        );
-
         GAMMA.transferFrom(msg.sender, address(child[count]), _id);
     }
 
-    function matchGamma(uint256 _id, uint256 _idBAYC) public{
+    //Matching Kennels
+    //Creates new child contract, moves existing APE from this contract to child, to claim.
+    function matchGammaBAYC(uint256 _id, uint256 _idBAYC) public{
+        require(claimContract.alphaClaimed(_id) == false, "Token has been claimed");
         child[++count] = new ChildContract(msg.sender, _id, address(this));
 
         GAMMA.transferFrom(msg.sender, address(child[count]), _id);
         ALPHA.transferFrom(address(this), address(child[count]), BAYC[_idBAYC].tokenID);
-    
+        
         child[count].setType();
-        child[count].setSecondary(msg.sender,_id);
+        child[count].setSecondary(BAYC[_idBAYC].wallet,BAYC[_idBAYC].tokenID);
+        child[count].claim();
+    }
+
+    function matchGammaMAYC(uint256 _id, uint256 _idMAYC) public{
+        require(claimContract.betaClaimed(_id) == false, "Token has been claimed");
+        child[++count] = new ChildContract(msg.sender, _id, address(this));
+
+        GAMMA.transferFrom(msg.sender, address(child[count]), _id);
+        BETA.transferFrom(address(this), address(child[count]), MAYC[_idMAYC].tokenID);
+
+        child[count].setSecondary(MAYC[_idMAYC].wallet,MAYC[_idMAYC].tokenID);
         child[count].claim();
     }
     
+
+    //MATCHING APES TO KENNEL CONTRACTS
     function matchAlpha(uint _contract, uint256 _id) public{
         require(claimContract.alphaClaimed(_id) == false, "Token has been claimed");
-        require(pairs[_contract].secondary == 0x0000000000000000000000000000000000000000, "This primary has been used");
-
-        pairs[_contract].secondary = msg.sender;
-        pairs[_contract].secondaryNFT = _id;
 
         ALPHA.transferFrom(msg.sender, address(child[_contract]), _id);
 
@@ -101,26 +119,26 @@ contract ParentContract {
         child[_contract].claim();
     }
 
+    function matchBeta(uint _contract, uint256 _id) public{
+        require(claimContract.betaClaimed(_id) == false, "Token has been claimed");
 
-    function depositGammaToChild(uint256 _contract,uint256 _id) public{
-        require(GAMMA.ownerOf(_id) == msg.sender, "You must own this token");
-        require(pairs[_contract].secondary == 0x0000000000000000000000000000000000000000, "this pair has been used");
-        
-        pairs[_contract].secondary = msg.sender;
-        pairs[_contract].secondaryNFT = _id;
+        BETA.transferFrom(msg.sender, address(child[_contract]), _id);
 
-        GAMMA.transferFrom(msg.sender, address(child[_contract]), _id);
         child[_contract].setSecondary(msg.sender,_id);
         child[_contract].claim();
-        child[_contract].withdraw(IERC20(0xd9145CCE52D386f254917e481eB44e9943F39138));
     }
+
 
     function withdrawAlpha(uint256 tokenId, uint256 _index) external{
         require(BAYC[_index].wallet == msg.sender, "Token is not yours");
         ALPHA.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
-    //Setters
+    function withdrawBeta(uint256 tokenId, uint256 _index) external{
+        require(MAYC[_index].wallet == msg.sender, "Token is not yours");
+        BETA.safeTransferFrom(address(this), msg.sender, tokenId);
+    }
+    
     function setClaimContract(address _grapes) public {
         claimContract = deployedContract(_grapes);
     }
