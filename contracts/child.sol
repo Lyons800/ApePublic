@@ -43,6 +43,7 @@ contract ChildContract is IERC721Receiver{
 
     function setSecondary(address _address, uint256 _tokenId) external {
         require(msg.sender==address(Parent), "You are not the farther");
+        secondaryWallet = _address;
         _depositedSecondary[_address].add(_tokenId);
     }
 
