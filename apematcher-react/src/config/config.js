@@ -1,0 +1,6 @@
+const config = {
+  PARENT_ADDRESS: '0x5343f795F4AC9a999ea85eE3D6EA76124E05C0B5',
+  BAYC_ADDRESS: '0x8f2495Bdc0cfe864B5098bdE25698511a1973Af7',
+};
+
+export default config;
