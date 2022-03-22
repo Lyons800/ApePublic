@@ -1,0 +1,55 @@
+import chai, { expect } from 'chai';
+import { BigNumber, Contract, constants, utils } from 'ethers';
+import { solidity, MockProvider, createFixtureLoader, deployContract } from 'ethereum-waffle';
+
+import Grapes from '../build/Grapes.json';
+
+chai.use(solidity);
+
+const overrides = {
+    gasLimit: 9999999999,
+};
+
+
+describe('Grapes', function () {
+    const provider = new MockProvider({
+        ganacheOptions: {
+            hardfork: 'istanbul',
+            mnemonic: 'horn horn horn horn horn horn horn horn horn horn horn horn',
+            gasLimit: 9999999999
+        },
+    });
+
+    const [wallet, other] = provider.getWallets();
+
+    let grapes: Contract;
+
+
+    beforeEach(async function () {
+
+        grapes = await deployContract(wallet, Grapes, [], overrides);
+
+
+    });
+
+    it('set Claim Contract', async function () {
+
+
+        expect(await grapes.claimDuration()).to.be.eq(0);
+
+    });
+
+
+
+    it('get', async function () {
+
+
+        let x = await grapes.getAlphaClaimed(0);
+        expect(x).to.be.eq(false);
+
+    });
+
+
+
+
+});
