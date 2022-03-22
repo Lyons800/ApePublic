@@ -108,63 +108,81 @@ contract ParentContract {
 
     //Matching Kennels
     //Creates new child contract, moves existing APE from this contract to child, to claim.
-    function matchGammaBAYC(uint256 _id, uint256 _idBAYC) public{
-        require(claimContract.alphaClaimed(_id) == false, "Token has been claimed");
-        child[++count] = new ChildContract(msg.sender, _id, address(this));
+    function matchGammaBAYC(uint256[] _id, uint256[] _idBAYC) public{
+        for(unit i=0; i < _id.length; i++){
+            require(claimContract.gammaClaimed(_id[i]) == false, "Token has been claimed");
+        }
 
-        GAMMA.transferFrom(msg.sender, address(child[count]), _id);
-        ALPHA.transferFrom(address(this), address(child[count]), BAYC[_idBAYC].tokenID);
+        for(unit i=0; i < _id.length; i++){
+            child[++count] = new ChildContract(msg.sender, _id[i], address(this));
+
+            GAMMA.transferFrom(msg.sender, address(child[count]), _id[i]);
+            ALPHA.transferFrom(address(this), address(child[count]), BAYC[_idBAYC[i]].tokenID);
+            
+            child[count].setType();
+            child[count].setSecondary(BAYC[_idBAYC[i]].wallet,BAYC[_idBAYC[i]].tokenID);
+            child[count].claim();
+        }
         
-        child[count].setType();
-        child[count].setSecondary(BAYC[_idBAYC].wallet,BAYC[_idBAYC].tokenID);
-        child[count].claim();
+        
     }
 
-    function matchGammaMAYC(uint256 _id, uint256 _idMAYC) public{
-        require(claimContract.betaClaimed(_id) == false, "Token has been claimed");
-        child[++count] = new ChildContract(msg.sender, _id, address(this));
+    function matchGammaMAYC(uint256[] _id, uint256[] _idMAYC) public{
+        for(unit i=0; i < _id.length; i++){
+            require(claimContract.gammaClaimed(_id[i]) == false, "Token has been claimed");
+        }
 
-        GAMMA.transferFrom(msg.sender, address(child[count]), _id);
-        BETA.transferFrom(address(this), address(child[count]), MAYC[_idMAYC].tokenID);
+        for(unit i=0; i < _id.length; i++){
+            child[++count] = new ChildContract(msg.sender, _id[i], address(this));
 
-        child[count].setSecondary(MAYC[_idMAYC].wallet,MAYC[_idMAYC].tokenID);
-        child[count].claim();
+            GAMMA.transferFrom(msg.sender, address(child[count]), _id[i]);
+            BETA.transferFrom(address(this), address(child[count]), MAYC[_idMAYC[i]].tokenID);
+
+            child[count].setSecondary(MAYC[_idMAYC[i]].wallet,MAYC[_idMAYC[i]].tokenID);
+            child[count].claim();
+        }
     }
     
 
     //MATCHING APES TO KENNEL CONTRACTS
     function matchAlpha(uint[] _contract, uint256[] _id) public{
-        require(_contract.length == _id.length)
+        require(_contract.length == _id.length, "Not enough tokens or contracts");
+
         for(unit i=0; i < _id.length; i++){
-            require(claimContract.alphaClaimed(_id) == false, "Token has been claimed");
+            require(claimContract.alphaClaimed(_id[i]) == false, "Token has been claimed");
         }
 
         for(unit i=0; i < _id.length; i++){
-            require(claimContract.alphaClaimed(_id) == false, "Token has been claimed");
+            ALPHA.transferFrom(msg.sender, address(child[_contract[i] ]), _id[i]);
+
+            children[_contract[i] ]._apeOwner = msg.sender;
+            children[_contract[i] ]._apeID = _id[i];
+            children[_contract[i] ].filled = true;
+
+            child[_contract[i] ].setType();
+            child[_contract[i] ].setSecondary(msg.sender,_id[i]);
+            child[_contract[i] ].claim();
         }
-
-        ALPHA.transferFrom(msg.sender, address(child[_contract]), _id);
-
-        children[count]._apeOwner = msg.sender;
-        children[count]._apeID = _id;
-        children[count].filled = true;
-
-        child[_contract].setType();
-        child[_contract].setSecondary(msg.sender,_id);
-        child[_contract].claim();
     }
 
-    function matchBeta(uint _contract, uint256 _id) public{
-        require(claimContract.betaClaimed(_id) == false, "Token has been claimed");
+    function matchBeta(uint[] _contract, uint256[] _id) public{
+        require(_contract.length == _id.length, "Not enough tokens or contracts");
 
-        BETA.transferFrom(msg.sender, address(child[_contract]), _id);
+        for(unit i=0; i < _id.length; i++){
+            require(claimContract.betaClaimed(_id[i]) == false, "Token has been claimed");
+        }
 
-        children[count]._apeOwner = msg.sender;
-        children[count]._apeID = _id;
-        children[count].filled = true;
+        for(unit i=0; i < _id.length; i++){
+            BETA.transferFrom(msg.sender, address(child[_contract[i] ]), _id[i]);
 
-        child[_contract].setSecondary(msg.sender,_id);
-        child[_contract].claim();
+            children[_contract[i] ]._apeOwner = msg.sender;
+            children[_contract[i] ]._apeID = _id[i];
+            children[_contract[i] ].filled = true;
+
+            child[_contract[i] ].setType();
+            child[_contract[i] ].setSecondary(msg.sender,_id[i]);
+            child[_contract[i] ].claim();
+        }
     }
 
 
