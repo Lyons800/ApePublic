@@ -776,7 +776,7 @@ function BoredApe({ login, logout }) {
             <div id="a1-jump1" className="accordion-content-jump"></div>
             <div className="bayc_display_wrapper">
               <div className="bayc_content">
-                {bayc.length > 1 && (
+                {account && bayc.length > 1 && (
                   <div className="emptyNft_box">
                     <div className="emptyNft_box"></div>
                     <h4 className="bayc_display_notice">
@@ -788,7 +788,7 @@ function BoredApe({ login, logout }) {
                 )}
 
                 {/* {bayc.length < 1 &&  !deposit */}
-                {!deposit && bayc.length > 1 && (
+                {account && !deposit && bayc.length > 1 && (
                   <div className="scroll-box__container" role="list">
                     {bapes.length > 1
                       ? bapes.map((item) => {
@@ -856,7 +856,7 @@ function BoredApe({ login, logout }) {
                   </div>
                 )}
                 {/* } */}
-                {deposit && (
+                {account && deposit && (
                   <div className="deposited-box__container" role="list">
                     {bayc.map((item) => {
                       return (
@@ -880,6 +880,11 @@ function BoredApe({ login, logout }) {
                         </div>
                       );
                     })}
+                  </div>
+                )}
+                {!account && (
+                  <div style={{ color: '#ffffff', height: "100%", display: "flex", alignItems: "center" }}>
+                    Please connect your wallet
                   </div>
                 )}
               </div>
