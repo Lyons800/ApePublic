@@ -9,9 +9,11 @@ function BoredApe({ login, logout }) {
   const [bayc, setBayc] = useState([]);
   //   selected apes
   const [ape, setApe] = useState([]);
+  const [apeIds, setApeIds] = useState([])
   //   eligible aoes
   const [bapes, setBapes] = useState([]);
   const [deposit, setDeposit] = useState(false);
+  const [isTx, setIsTx] = useState(false)
 
   const {
     authenticate,
@@ -710,8 +712,9 @@ function BoredApe({ login, logout }) {
         gasLimit: '100000',
       });
 
+      setIsTx(true)
       await transaction.wait();
-
+      setIsTx(false)
       console.log('Deposited', transaction);
     } catch (error) {
       console.log(error);
@@ -736,11 +739,14 @@ function BoredApe({ login, logout }) {
 
   const chooseApe = (id) => {
     setApe([...ape, id]);
+    setApeIds([...apeIds, id.token_id])
   };
 
   const deselect = (id) => {
     const i = ape.filter((x) => x !== id);
+    const ids = apeIds.filter((x) => x !== id.token_id);
     setApe(i);
+    setApeIds([...ids])
   };
 
   useEffect(() => {
@@ -776,7 +782,7 @@ function BoredApe({ login, logout }) {
             <div id="a1-jump1" className="accordion-content-jump"></div>
             <div className="bayc_display_wrapper">
               <div className="bayc_content">
-                {account && bayc.length > 1 && (
+                {account && !isTx && bayc.length > 1 && (
                   <div className="emptyNft_box">
                     <div className="emptyNft_box"></div>
                     <h4 className="bayc_display_notice">
@@ -788,7 +794,7 @@ function BoredApe({ login, logout }) {
                 )}
 
                 {/* {bayc.length < 1 &&  !deposit */}
-                {account && !deposit && bayc.length > 1 && (
+                {account && !isTx && !deposit && bayc.length > 1 && (
                   <div className="scroll-box__container" role="list">
                     {bapes.length > 1
                       ? bapes.map((item) => {
@@ -856,7 +862,7 @@ function BoredApe({ login, logout }) {
                   </div>
                 )}
                 {/* } */}
-                {account && deposit && (
+                {account && !isTx && deposit && (
                   <div className="deposited-box__container" role="list">
                     {bayc.map((item) => {
                       return (
@@ -874,12 +880,39 @@ function BoredApe({ login, logout }) {
                               {item.name}#{item.token_id}
                             </p>
                           </div>
-                          <button className="deposited-box_button">
-                            claim
+                          <button className="deposited-box_button" 
+                            onClick={() => {
+                              let d = ape.find(
+                                (r) => r.token_id === item.token_id
+                              );
+                              if (!d) {
+                                chooseApe(item);
+                              } else {
+                                deselect(item);
+                              }
+                            }}>
+                            {
+                              apeIds.indexOf(item.token_id) > -1 ? (
+                                <>
+                                  Selected
+                                </>
+                              )
+                              :
+                              (
+                                <>
+                                  Select
+                                </>
+                              )
+                            }
                           </button>
                         </div>
                       );
                     })}
+                  </div>
+                )}
+                {account && isTx && (
+                  <div style={{ color: '#ffffff', height: "100%", display: "flex", alignItems: "center" }}>
+                    Please confirm the transaction in your wallet
                   </div>
                 )}
                 {!account && (
@@ -888,7 +921,7 @@ function BoredApe({ login, logout }) {
                   </div>
                 )}
               </div>
-              {account ? (
+              {account ? ape.length > 0 && (
                 <div className="bayc_button">
                   {/* {bapes.length < 0 && ( */}
                   {/* <button

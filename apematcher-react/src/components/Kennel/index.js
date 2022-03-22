@@ -11,9 +11,11 @@ function Kennel({ login, logout }) {
   const [bayc, setBayc] = useState([]);
   //   selected apes
   const [ape, setApe] = useState([]);
+  const [apeIds, setApeIds] = useState([])
   //   eligible aoes
   const [bapes, setBapes] = useState([]);
   const [deposit, setDeposit] = useState(false);
+  const [isTx, setIsTx] = useState(false)
 
   const {
     authenticate,
@@ -71,7 +73,9 @@ function Kennel({ login, logout }) {
       gasLimit: '100000',
     });
 
+    setIsTx(true)
     await transaction.wait();
+    setIsTx(false)
 
     console.log('Deposited', transaction);
   };
@@ -94,11 +98,14 @@ function Kennel({ login, logout }) {
 
   const chooseApe = (id) => {
     setApe([...ape, id]);
+    setApeIds([...apeIds, id.token_id])
   };
 
   const deselect = (id) => {
     const i = ape.filter((x) => x !== id);
+    const ids = apeIds.filter((x) => x !== id.token_id);
     setApe(i);
+    setApeIds([...ids])
   };
 
   useEffect(() => {
@@ -145,7 +152,7 @@ function Kennel({ login, logout }) {
                 )}
 
                 {/* {bayc.length < 1 &&  !deposit */}
-                {account && account && !deposit && bayc.length > 1 && (
+                {account && !isTx && !deposit && bayc.length > 1 && (
                   <div className="scroll-box__container" role="list">
                     {bapes.length > 1
                       ? bapes.map((item) => {
@@ -213,7 +220,7 @@ function Kennel({ login, logout }) {
                   </div>
                 )}
                 {/* } */}
-                {account && deposit && (
+                {account && !isTx && deposit && (
                   <div className="deposited-box__container" role="list">
                     {bayc.map((item) => {
                       return (
@@ -231,12 +238,39 @@ function Kennel({ login, logout }) {
                               {item.name}#{item.token_id}
                             </p>
                           </div>
-                          <button className="deposited-box_button">
-                            claim
+                          <button className="deposited-box_button" 
+                            onClick={() => {
+                              let d = ape.find(
+                                (r) => r.token_id === item.token_id
+                              );
+                              if (!d) {
+                                chooseApe(item);
+                              } else {
+                                deselect(item);
+                              }
+                            }}>
+                            {
+                              apeIds.indexOf(item.token_id) > -1 ? (
+                                <>
+                                  Selected
+                                </>
+                              )
+                              :
+                              (
+                                <>
+                                  Select
+                                </>
+                              )
+                            }
                           </button>
                         </div>
                       );
                     })}
+                  </div>
+                )}
+                {account && isTx && (
+                  <div style={{ color: '#ffffff', height: "100%", display: "flex", alignItems: "center" }}>
+                    Please check the transaction in your wallet
                   </div>
                 )}
                 {!account && (
@@ -246,7 +280,7 @@ function Kennel({ login, logout }) {
                 )}
               </div>
               {
-                account ? (
+                account ? ape.length > 0 && (
                   <div className="bayc_button">
                     {/* {bapes.length < 0 && ( */}
                     {/* <button
