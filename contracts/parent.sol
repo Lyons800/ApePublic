@@ -31,14 +31,14 @@ contract ParentContract {
     mapping (uint256 => ChildContract) public child;
     uint count;
 
-    struct Details(
+    struct Details{
         address _childAddress; // ADDRESS Child contract address
-        address _kennelOwner;, // ADDRESS Primary wallet address
+        address _kennelOwner; // ADDRESS Primary wallet address
         uint256 _kennelID; // UINT256 Primary NFT ID 
         address _apeOwner; // APE WALLET
         uint256 _apeID; // APE TOKEN ID
-        bool filled
-    );
+        bool filled;
+    }
     mapping (uint => Details) public children;
 
     struct _BAYC { 
@@ -58,13 +58,12 @@ contract ParentContract {
     constructor() public{}
 
     //Deposit apes into contract.
-    function depositAlpha(uint256[] _id) public{
-
-        for(unit i=0; i < _id.length; i++){
+    function depositAlpha(uint256[] calldata _id) public{
+        for(uint256 i=0; i < _id.length; i++){
             require(claimContract.alphaClaimed(_id[i]) == false, "Token has been claimed");
         }
         
-        for(unit i=0; i < _id.length; i++){
+        for(uint256 i=0; i < _id.length; i++){
             BAYC[BAYCcount++] = _BAYC(
                                     msg.sender,
                                     _id[i]
@@ -74,13 +73,13 @@ contract ParentContract {
         }
     }
 
-    function depositBeta(uint256[] _id) public{
+    function depositBeta(uint256[] calldata _id) public{
 
-        for(unit i=0; i < _id.length; i++){
+        for(uint256 i=0; i < _id.length; i++){
             require(claimContract.betaClaimed(_id[i]) == false, "Token has been claimed");
         }
         
-        for(unit i=0; i < _id.length; i++){
+        for(uint256 i=0; i < _id.length; i++){
             MAYC[MAYCcount++] = _MAYC(
                                     msg.sender,
                                     _id[i]
@@ -92,15 +91,15 @@ contract ParentContract {
 
     //Deposit KENNEL into contract.
     //Creates child contract on deposit
-    function depositGamma(uint256[] _id) public{
-        for(unit i=0; i < id.length; i++){
+    function depositGamma(uint256[] calldata _id) public{
+        for(uint256 i=0; i < _id.length; i++){
             require(claimContract.gammaClaimed(_id[i]) == false, "Token has been claimed");
         }
         
-        for(unit i=0; i < _id.length; i++){
+        for(uint256 i=0; i < _id.length; i++){
             child[++count] = new ChildContract(msg.sender, _id[i], address(this));
 
-            children[count] = Details(child[count],msg.sender,_id[i],_FILLERWALLET,0,false);
+            children[count] = Details(address(child[count]),msg.sender,_id[i],_FILLERWALLET,0,false);
 
             GAMMA.transferFrom(msg.sender, address(child[count]), _id[i]);
         }
@@ -108,12 +107,12 @@ contract ParentContract {
 
     //Matching Kennels
     //Creates new child contract, moves existing APE from this contract to child, to claim.
-    function matchGammaBAYC(uint256[] _id, uint256[] _idBAYC) public{
-        for(unit i=0; i < _id.length; i++){
+    function matchGammaBAYC(uint256[] calldata _id, uint256[] calldata _idBAYC) public{
+        for(uint256 i=0; i < _id.length; i++){
             require(claimContract.gammaClaimed(_id[i]) == false, "Token has been claimed");
         }
 
-        for(unit i=0; i < _id.length; i++){
+        for(uint256 i=0; i < _id.length; i++){
             child[++count] = new ChildContract(msg.sender, _id[i], address(this));
 
             GAMMA.transferFrom(msg.sender, address(child[count]), _id[i]);
@@ -127,12 +126,12 @@ contract ParentContract {
         
     }
 
-    function matchGammaMAYC(uint256[] _id, uint256[] _idMAYC) public{
-        for(unit i=0; i < _id.length; i++){
+    function matchGammaMAYC(uint256[] calldata _id, uint256[] calldata _idMAYC) public{
+        for(uint256 i=0; i < _id.length; i++){
             require(claimContract.gammaClaimed(_id[i]) == false, "Token has been claimed");
         }
 
-        for(unit i=0; i < _id.length; i++){
+        for(uint256 i=0; i < _id.length; i++){
             child[++count] = new ChildContract(msg.sender, _id[i], address(this));
 
             GAMMA.transferFrom(msg.sender, address(child[count]), _id[i]);
@@ -145,14 +144,14 @@ contract ParentContract {
     
 
     //MATCHING APES TO KENNEL CONTRACTS
-    function matchAlpha(uint[] _contract, uint256[] _id) public{
+    function matchAlpha(uint[] calldata _contract, uint256[] calldata _id) public{
         require(_contract.length == _id.length, "Not enough tokens or contracts");
 
-        for(unit i=0; i < _id.length; i++){
+        for(uint256 i=0; i < _id.length; i++){
             require(claimContract.alphaClaimed(_id[i]) == false, "Token has been claimed");
         }
 
-        for(unit i=0; i < _id.length; i++){
+        for(uint256 i=0; i < _id.length; i++){
             ALPHA.transferFrom(msg.sender, address(child[_contract[i] ]), _id[i]);
 
             children[_contract[i] ]._apeOwner = msg.sender;
@@ -165,14 +164,14 @@ contract ParentContract {
         }
     }
 
-    function matchBeta(uint[] _contract, uint256[] _id) public{
+    function matchBeta(uint[] calldata _contract, uint256[] calldata _id) public{
         require(_contract.length == _id.length, "Not enough tokens or contracts");
 
-        for(unit i=0; i < _id.length; i++){
+        for(uint256 i=0; i < _id.length; i++){
             require(claimContract.betaClaimed(_id[i]) == false, "Token has been claimed");
         }
 
-        for(unit i=0; i < _id.length; i++){
+        for(uint256 i=0; i < _id.length; i++){
             BETA.transferFrom(msg.sender, address(child[_contract[i] ]), _id[i]);
 
             children[_contract[i] ]._apeOwner = msg.sender;
@@ -184,7 +183,6 @@ contract ParentContract {
             child[_contract[i] ].claim();
         }
     }
-
 
     function withdrawAlpha(uint256 tokenId, uint256 _index) external{
         require(BAYC[_index].wallet == msg.sender, "Token is not yours");
