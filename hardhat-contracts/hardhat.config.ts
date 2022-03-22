@@ -23,8 +23,12 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.4",
+  solidity: "0.8.12",
   networks: {
+    localhost: {
+      chainId: 31337, // Chain ID should match the hardhat network's chainid
+      accounts: [`0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e`],
+    },
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
       accounts:
