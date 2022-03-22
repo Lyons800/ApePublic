@@ -2,16 +2,27 @@
 
 pragma solidity ^0.8.12;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MockERC20 is ERC20 {
-
+contract MockERC721 is ERC721, Ownable {
     constructor(
         string memory name,
-        string memory symbol,
-        uint256 supply
-    ) public ERC20(name, symbol) {
-        _mint(msg.sender, supply);
-    }
+        string memory symbol
+    ) public ERC721(name, symbol) { }
 
-}   
+    /**
+    * @dev Mints a new NFT.
+    * @param _to The address that will own the minted NFT.
+    * @param _tokenId of the NFT to be minted by the msg.sender.
+    */
+    function mint (
+        address _to,
+        uint256 _tokenId
+    )
+        external
+        onlyOwner
+    {
+        super._mint(_to, _tokenId);
+    }
+}
