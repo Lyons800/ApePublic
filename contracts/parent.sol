@@ -60,11 +60,11 @@ contract ParentContract {
     //Deposit apes into contract.
     function depositAlpha(uint256[] _id) public{
 
-        for(unit i=0; i < id.length; i++){
+        for(unit i=0; i < _id.length; i++){
             require(claimContract.alphaClaimed(_id[i]) == false, "Token has been claimed");
         }
         
-        for(unit i=0; i < id.length; i++){
+        for(unit i=0; i < _id.length; i++){
             BAYC[BAYCcount++] = _BAYC(
                                     msg.sender,
                                     _id[i]
@@ -76,11 +76,11 @@ contract ParentContract {
 
     function depositBeta(uint256[] _id) public{
 
-        for(unit i=0; i < id.length; i++){
+        for(unit i=0; i < _id.length; i++){
             require(claimContract.betaClaimed(_id[i]) == false, "Token has been claimed");
         }
         
-        for(unit i=0; i < id.length; i++){
+        for(unit i=0; i < _id.length; i++){
             MAYC[MAYCcount++] = _MAYC(
                                     msg.sender,
                                     _id[i]
@@ -97,7 +97,7 @@ contract ParentContract {
             require(claimContract.gammaClaimed(_id[i]) == false, "Token has been claimed");
         }
         
-        for(unit i=0; i < id.length; i++){
+        for(unit i=0; i < _id.length; i++){
             child[++count] = new ChildContract(msg.sender, _id[i], address(this));
 
             children[count] = Details(child[count],msg.sender,_id[i],_FILLERWALLET,0,false);
@@ -133,8 +133,15 @@ contract ParentContract {
     
 
     //MATCHING APES TO KENNEL CONTRACTS
-    function matchAlpha(uint _contract, uint256 _id) public{
-        require(claimContract.alphaClaimed(_id) == false, "Token has been claimed");
+    function matchAlpha(uint[] _contract, uint256[] _id) public{
+        require(_contract.length == _id.length)
+        for(unit i=0; i < _id.length; i++){
+            require(claimContract.alphaClaimed(_id) == false, "Token has been claimed");
+        }
+
+        for(unit i=0; i < _id.length; i++){
+            require(claimContract.alphaClaimed(_id) == false, "Token has been claimed");
+        }
 
         ALPHA.transferFrom(msg.sender, address(child[_contract]), _id);
 
