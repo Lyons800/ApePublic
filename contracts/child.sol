@@ -13,6 +13,10 @@ interface claimInterface{
     function claimTokens() external payable;
 }
 
+interface parentInterface{
+    function flagContract(uint256 _id) external;
+}
+
 contract ChildContract is IERC721Receiver{
     using EnumerableSet for EnumerableSet.UintSet;
     using SafeERC20 for IERC20;
@@ -72,6 +76,8 @@ contract ChildContract is IERC721Receiver{
         require(_depositedPrimary[msg.sender].contains(tokenId), "Query for a token you don't own");
 
         _depositedPrimary[msg.sender].remove(tokenId);
+
+        parent.flagContract(uint256 tokenId);
 
         GAMMA.safeTransferFrom(address(this), msg.sender, tokenId);
     }
