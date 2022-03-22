@@ -22,9 +22,9 @@ contract ParentContract {
 
     deployedContract claimContract;
     //parents
-    ERC721Enumerable public ALPHA = ERC721Enumerable(0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8);
-    ERC721Enumerable public BETA = ERC721Enumerable(0xf8e81D47203A594245E36C48e151709F0C19fBe8);
-    ERC721Enumerable public GAMMA = ERC721Enumerable(0xD7ACd2a9FD159E69Bb102A1ca21C9a3e3A5F771B);
+    ERC721Enumerable public ALPHA = ERC721Enumerable(0x8f2495Bdc0cfe864B5098bdE25698511a1973Af7);
+    ERC721Enumerable public BETA = ERC721Enumerable(0xD7eeB4B6e97700c8dba03B897f8BA8b8ed39E1fd);
+    ERC721Enumerable public GAMMA = ERC721Enumerable(0x069225faBD2f7bEA2Fa32Bdf1A035C0311Bd7BE0);
 
 
     mapping (uint256 => ChildContract) public child;
