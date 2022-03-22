@@ -2336,6 +2336,7 @@ a {
   margin: 10px;
   cursor: pointer;
   border-radius: 10px;
+  box-sizing: content-box;
 }
 
 .bayc_box:hover:not(.selected) {
