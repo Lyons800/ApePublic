@@ -44,8 +44,8 @@ function Accordion() {
   return (
     <div className="accordion-container">
       <Header login={login} logout={logOut} />
-      <BoredApe account={account} />
-      <MutantApe />
+      <BoredApe login={login} logout={logOut}/>
+      <MutantApe login={login} logout={logOut}/>
       <Kennel />
     </div>
   );

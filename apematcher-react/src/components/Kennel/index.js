@@ -4,7 +4,7 @@ import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 import ParentAbi from '../../config/parentAbi';
 import Config from '../../config/config';
 
-function Kennel() {
+function Kennel({ login, logout }) {
   const Web3Api = useMoralisWeb3Api();
 
   // apes from nft api
@@ -149,69 +149,67 @@ function Kennel() {
                   <div className="scroll-box__container" role="list">
                     {bapes.length > 1
                       ? bapes.map((item) => {
-                          const token = ape.find((x) => x === item.token_id);
+                        const token = ape.find((x) => x === item.token_id);
 
-                          return (
-                            <div
-                              key={item.token_id}
-                              className={` bayc_box ${token ? 'selected' : ''}`}
-                              onClick={() => {
-                                let d = ape.find(
-                                  (r) => r.token_id === item.token_id
-                                );
-                                if (!d) {
-                                  chooseApe(item);
-                                } else {
-                                  deselect(item);
-                                }
-                              }}
-                            >
-                              <img
-                                src={`https://ipfs.moralis.io:2053/ipfs/${
-                                  item &&
-                                  JSON.parse(item.metadata)?.image.substring(7)
+                        return (
+                          <div
+                            key={item.token_id}
+                            className={` bayc_box ${token ? 'selected' : ''}`}
+                            onClick={() => {
+                              let d = ape.find(
+                                (r) => r.token_id === item.token_id
+                              );
+                              if (!d) {
+                                chooseApe(item);
+                              } else {
+                                deselect(item);
+                              }
+                            }}
+                          >
+                            <img
+                              src={`https://ipfs.moralis.io:2053/ipfs/${item &&
+                                JSON.parse(item.metadata)?.image.substring(7)
                                 }`}
-                                alt="asas"
-                              />
-                              <p className="deposited-box_title">
-                                {item.token_id}
-                              </p>
-                            </div>
-                          );
-                        })
+                              alt="asas"
+                            />
+                            <p className="deposited-box_title">
+                              {item.token_id}
+                            </p>
+                          </div>
+                        );
+                      })
                       : bayc.map((item) => {
-                          const token = ape.find(
-                            (x) => x.token_id === item.token_id
-                          );
+                        const token = ape.find(
+                          (x) => x.token_id === item.token_id
+                        );
 
-                          return (
-                            <div
-                              key={item.token_id}
-                              className={` bayc_box ${token ? 'selected' : ''}`}
-                              onClick={() => {
-                                let d = ape.find(
-                                  (r) => r.token_id === item.token_id
-                                );
-                                if (!d) {
-                                  chooseApe(item);
-                                } else {
-                                  deselect(item);
-                                }
-                              }}
-                            >
-                              <img
-                                src={`https://ipfs.moralis.io:2053/ipfs/${
-                                  item &&
-                                  JSON.parse(item.metadata)?.image.substring(7)
+                        return (
+                          <div
+                            key={item.token_id}
+                            className={` bayc_box ${token ? 'selected' : ''}`}
+                            onClick={() => {
+                              let d = ape.find(
+                                (r) => r.token_id === item.token_id
+                              );
+                              if (!d) {
+                                chooseApe(item);
+                              } else {
+                                deselect(item);
+                              }
+                            }}
+                          >
+                            <img
+                              src={`https://ipfs.moralis.io:2053/ipfs/${item &&
+                                JSON.parse(item.metadata)?.image.substring(7)
                                 }`}
-                                alt="asas"
-                              />
-                              <p className="deposited-box_title">
-                                {item.token_id}
-                              </p>
-                            </div>
-                          );
-                        })}
+                              alt="asas"
+                            />
+                            <p className="deposited-box_title">
+                              {item.token_id}
+                            </p>
+                          </div>
+                        );
+                      })}
                   </div>
                 )}
                 {/* } */}
@@ -223,10 +221,9 @@ function Kennel() {
                           <div className="deposited-box_group">
                             <div className="deposited-box_image">
                               <img
-                                src={`https://ipfs.moralis.io:2053/ipfs/${
-                                  item &&
+                                src={`https://ipfs.moralis.io:2053/ipfs/${item &&
                                   JSON.parse(item.metadata)?.image.substring(7)
-                                }`}
+                                  }`}
                                 alt="asas"
                               />
                             </div>
@@ -243,27 +240,46 @@ function Kennel() {
                   </div>
                 )}
               </div>
-              <div className="bayc_button">
-                {/* {bapes.length < 0 && ( */}
-                <button
+              {
+                account ? (
+                  <div className="bayc_button">
+                    {/* {bapes.length < 0 && ( */}
+                    {/* <button
                   onClick={() => {
                     checkEligibility();
                   }}
                   className="btn_check"
                 >
                   Check Elligibility
-                </button>
-                {/* )} */}
-                <button
-                  className="btn_deposit"
-                  onClick={() => {
-                    depositBayc();
-                    setDeposit(true);
-                  }}
-                >
-                  Deposit
-                </button>
-              </div>
+                </button> */}
+                    {/* )} */}
+                    <button
+                      className="btn_deposit"
+                      onClick={() => {
+                        depositBayc();
+                        setDeposit(true);
+                      }}
+                    >
+                      Deposit
+                    </button>
+                  </div>
+                )
+                  :
+                  (
+                    <div className="bayc_button">
+                      <button
+                        className="btn_connect"
+                        onClick={() => {
+                          logout()
+                          login()
+                        }}
+                      >
+                        Connect
+                      </button>
+                    </div>
+                  )
+              }
+
             </div>
           </div>
         </div>

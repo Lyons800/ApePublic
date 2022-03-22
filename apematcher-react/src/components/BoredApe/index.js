@@ -3,7 +3,7 @@ import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 
 import Config from '../../config/config';
 
-function BoredApe() {
+function BoredApe({ login, logout }) {
   const Web3Api = useMoralisWeb3Api();
 
   const [bayc, setBayc] = useState([]);
@@ -706,7 +706,7 @@ function BoredApe() {
       const signer = web3Provider.getSigner();
       const instance = await contract.connect(signer);
 
-      const transaction = await instance.depositAlpha(2, {
+      const transaction = await instance.depositAlpha(9, {
         gasLimit: '100000',
       });
 
@@ -792,69 +792,67 @@ function BoredApe() {
                   <div className="scroll-box__container" role="list">
                     {bapes.length > 1
                       ? bapes.map((item) => {
-                          const token = ape.find((x) => x === item.token_id);
+                        const token = ape.find((x) => x === item.token_id);
 
-                          return (
-                            <div
-                              key={item.token_id}
-                              className={` bayc_box ${token ? 'selected' : ''}`}
-                              onClick={() => {
-                                let d = ape.find(
-                                  (r) => r.token_id === item.token_id
-                                );
-                                if (!d) {
-                                  chooseApe(item);
-                                } else {
-                                  deselect(item);
-                                }
-                              }}
-                            >
-                              <img
-                                src={`https://ipfs.moralis.io:2053/ipfs/${
-                                  item &&
-                                  JSON.parse(item.metadata)?.image.substring(7)
+                        return (
+                          <div
+                            key={item.token_id}
+                            className={` bayc_box ${token ? 'selected' : ''}`}
+                            onClick={() => {
+                              let d = ape.find(
+                                (r) => r.token_id === item.token_id
+                              );
+                              if (!d) {
+                                chooseApe(item);
+                              } else {
+                                deselect(item);
+                              }
+                            }}
+                          >
+                            <img
+                              src={`https://ipfs.moralis.io:2053/ipfs/${item &&
+                                JSON.parse(item.metadata)?.image.substring(7)
                                 }`}
-                                alt="asas"
-                              />
-                              <p className="deposited-box_title">
-                                {item.token_id}
-                              </p>
-                            </div>
-                          );
-                        })
+                              alt="asas"
+                            />
+                            <p className="deposited-box_title">
+                              {item.token_id}
+                            </p>
+                          </div>
+                        );
+                      })
                       : bayc.map((item) => {
-                          const token = ape.find(
-                            (x) => x.token_id === item.token_id
-                          );
+                        const token = ape.find(
+                          (x) => x.token_id === item.token_id
+                        );
 
-                          return (
-                            <div
-                              key={item.token_id}
-                              className={` bayc_box ${token ? 'selected' : ''}`}
-                              onClick={() => {
-                                let d = ape.find(
-                                  (r) => r.token_id === item.token_id
-                                );
-                                if (!d) {
-                                  chooseApe(item);
-                                } else {
-                                  deselect(item);
-                                }
-                              }}
-                            >
-                              <img
-                                src={`https://ipfs.moralis.io:2053/ipfs/${
-                                  item &&
-                                  JSON.parse(item.metadata)?.image.substring(7)
+                        return (
+                          <div
+                            key={item.token_id}
+                            className={` bayc_box ${token ? 'selected' : ''}`}
+                            onClick={() => {
+                              let d = ape.find(
+                                (r) => r.token_id === item.token_id
+                              );
+                              if (!d) {
+                                chooseApe(item);
+                              } else {
+                                deselect(item);
+                              }
+                            }}
+                          >
+                            <img
+                              src={`https://ipfs.moralis.io:2053/ipfs/${item &&
+                                JSON.parse(item.metadata)?.image.substring(7)
                                 }`}
-                                alt="asas"
-                              />
-                              <p className="deposited-box_title">
-                                {item.token_id}
-                              </p>
-                            </div>
-                          );
-                        })}
+                              alt="asas"
+                            />
+                            <p className="deposited-box_title">
+                              {item.token_id}
+                            </p>
+                          </div>
+                        );
+                      })}
                   </div>
                 )}
                 {/* } */}
@@ -866,10 +864,9 @@ function BoredApe() {
                           <div className="deposited-box_group">
                             <div className="deposited-box_image">
                               <img
-                                src={`https://ipfs.moralis.io:2053/ipfs/${
-                                  item &&
+                                src={`https://ipfs.moralis.io:2053/ipfs/${item &&
                                   JSON.parse(item.metadata)?.image.substring(7)
-                                }`}
+                                  }`}
                                 alt="asas"
                               />
                             </div>
@@ -886,27 +883,44 @@ function BoredApe() {
                   </div>
                 )}
               </div>
-              <div className="bayc_button">
-                {/* {bapes.length < 0 && ( */}
-                <button
-                  onClick={() => {
-                    checkEligibility();
-                  }}
-                  className="btn_check"
-                >
-                  Check Elligibility
-                </button>
-                {/* )} */}
-                <button
-                  className="btn_deposit"
-                  onClick={() => {
-                    depositBayc();
-                    setDeposit(true);
-                  }}
-                >
-                  Deposit
-                </button>
-              </div>
+              {account ? (
+                <div className="bayc_button">
+                  {/* {bapes.length < 0 && ( */}
+                  {/* <button
+                    onClick={() => {
+                      checkEligibility();
+                    }}
+                    className="btn_check"
+                  >
+                    Check Elligibility
+                  </button> */}
+                  {/* )} */}
+                  <button
+                    className="btn_deposit"
+                    onClick={() => {
+                      depositBayc();
+                      setDeposit(true);
+                    }}
+                  >
+                    Deposit
+                  </button>
+                </div>
+              )
+                :
+                (
+                  <div className="bayc_button">
+                    <button
+                      className="btn_connect"
+                      onClick={() => {
+                        logout()
+                        login()
+                      }}
+                    >
+                      Connect
+                    </button>
+                  </div>
+                )
+              }
             </div>
           </div>
         </div>

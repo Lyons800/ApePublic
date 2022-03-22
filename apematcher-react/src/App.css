@@ -32,3 +32,15 @@ writing-mode: vertical-rl;
 .accordion:last-child{
 border: 0px solid transparent !important;
 }
+
+.btn_connect,
+.btn_deposit {
+  padding: 10px 20px;
+  background: #000000;
+  color: #ffffff;
+  border-radius: 10px;
+}
+
+.bayc_content {
+  border-radius: 10px;
+}
