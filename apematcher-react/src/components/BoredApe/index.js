@@ -695,11 +695,10 @@ function BoredApe({ login, logout }) {
 
   const handleApprove = async (ape_instance) => {
     const approveStatus = await ape_instance.isApprovedForAll(account, parentAddress)
-    const emptyAddress = /^0x0+$/.test(approveStatus);
-    console.log(emptyAddress)
-    if (emptyAddress) {
+    if (!approveStatus) {
       const approve = await ape_instance.setApprovalForAll(parentAddress, true)
-      return approve
+      await approve.wait()
+      return;
     } else {
       return;
     }
@@ -805,7 +804,7 @@ function BoredApe({ login, logout }) {
             <div id="a1-jump1" className="accordion-content-jump"></div>
             <div className="bayc_display_wrapper">
               <div className="bayc_content">
-                {account && !isTx && bayc.length > 1 && (
+                {account && !isTx && bayc.length > 0 && (
                   <div className="emptyNft_box">
                     <div className="emptyNft_box"></div>
                     <h4 className="bayc_display_notice">
@@ -817,7 +816,7 @@ function BoredApe({ login, logout }) {
                 )}
 
                 {/* {bayc.length < 1 &&  !deposit */}
-                {account && !isTx && !deposit && bayc.length > 1 && (
+                {account && !isTx && !deposit && bayc.length > 0 && (
                   <div className="scroll-box__container" role="list">
                     {bapes.length > 1
                       ? bapes.map((item) => {

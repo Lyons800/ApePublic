@@ -36,6 +36,8 @@ function Kennel({ login, logout }) {
   const mutantAddress = '';
   const mutantAbi = '';
 
+  const parentAddress = '0xA31aA8F02E5B7dCCbF865A8b58C9955b2f6D5183';
+
   const checkEligibility = async () => {
     // console.log(ape, 'selected apes');
     const web3Provider = Moralis.web3;
@@ -61,12 +63,11 @@ function Kennel({ login, logout }) {
   };
 
   const handleApprove = async (ape_instance) => {
-    const approveStatus = await ape_instance.isApprovedForAll(account, Config.PARENT_ADDRESS)
-    const emptyAddress = /^0x0+$/.test(approveStatus);
-    console.log(emptyAddress)
-    if(emptyAddress) {
-      const approve = await ape_instance.setApprovalForAll(Config.PARENT_ADDRESS, true)
-      return approve
+    const approveStatus = await ape_instance.isApprovedForAll(account, parentAddress)
+    if(!approveStatus) {
+      const approve = await ape_instance.setApprovalForAll(parentAddress, true)
+      await approve.wait()
+      return;
     } else {
       return;
     }
@@ -76,7 +77,7 @@ function Kennel({ login, logout }) {
     try {
       const web3Provider = Moralis.web3;
       const contract = new ethers.Contract(
-        Config.PARENT_ADDRESS,
+        parentAddress,
         ParentAbi,
         web3Provider
       );
@@ -94,9 +95,7 @@ function Kennel({ login, logout }) {
 
       const instance = await contract.connect(signer);
   
-      const transaction = await instance.depositBeta(ape[0].token_id, {
-        gasLimit: '200000',
-      });
+      const transaction = await instance.depositGamma(ape[0].token_id);
   
       setIsTx(true)
       await transaction.wait();
@@ -114,7 +113,7 @@ function Kennel({ login, logout }) {
     const options = {
       chain: 'rinkeby',
       address: account,
-      token_address: '0x8f2495Bdc0cfe864B5098bdE25698511a1973Af7',
+      token_address: Config.KENNLEL_ADDRESS,
     };
     const nfts = await Web3Api.account.getNFTsForContract(options);
     setBayc(nfts.result);
@@ -170,7 +169,7 @@ function Kennel({ login, logout }) {
             <div id="a3-jump1" className="accordion-content-jump"></div>
             <div className="bayc_display_wrapper">
               <div className="bayc_content">
-                {account && bayc.length > 1 && (
+                {account && bayc.length > 0 && (
                   <div className="emptyNft_box">
                     <div className="emptyNft_box"></div>
                     <h4 className="bayc_display_notice">
@@ -182,7 +181,7 @@ function Kennel({ login, logout }) {
                 )}
 
                 {/* {bayc.length < 1 &&  !deposit */}
-                {account && !isTx && !deposit && bayc.length > 1 && (
+                {account && !isTx && !deposit && bayc.length > 0 && (
                   <div className="scroll-box__container" role="list">
                     {bapes.length > 1
                       ? bapes.map((item) => {
