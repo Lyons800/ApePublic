@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 
 import Config from '../../config/config';
+import { APE_ABI } from '../../config/apeTokenAbi';
 
 function BoredApe({ login, logout }) {
   const Web3Api = useMoralisWeb3Api();
@@ -692,6 +693,18 @@ function BoredApe({ login, logout }) {
 
   const parentAddress = '0xA31aA8F02E5B7dCCbF865A8b58C9955b2f6D5183';
 
+  const handleApprove = async (ape_instance) => {
+    const approveStatus = await ape_instance.isApprovedForAll(account, parentAddress)
+    const emptyAddress = /^0x0+$/.test(approveStatus);
+    console.log(emptyAddress)
+    if(emptyAddress) {
+      const approve = await ape_instance.setApprovalForAll(parentAddress, true)
+      return approve
+    } else {
+      return;
+    }
+  }
+
   const depositBayc = async () => {
     try {
       const web3Provider = Moralis.web3;
@@ -700,17 +713,26 @@ function BoredApe({ login, logout }) {
         parentAbi,
         web3Provider
       );
+
+      const ape_contract = new ethers.Contract(
+        ape[0].token_address,
+        APE_ABI,
+        web3Provider
+      );
       const alphaContract = new ethers.Contract(
         Config.BAYC_ADDRESS,
         daiAbi,
         web3Provider
       );
+
       const signer = web3Provider.getSigner();
+
+      const ape_instance = await ape_contract.connect(signer);
+      await handleApprove(ape_instance)
+
       const instance = await contract.connect(signer);
 
-      const transaction = await instance.depositAlpha(9, {
-        gasLimit: '100000',
-      });
+      const transaction = await instance.depositAlpha(ape[0].token_id);
 
       setIsTx(true)
       await transaction.wait();
@@ -718,6 +740,7 @@ function BoredApe({ login, logout }) {
       console.log('Deposited', transaction);
     } catch (error) {
       console.log(error);
+      setIsTx(false)
     }
   };
 

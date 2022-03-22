@@ -3,6 +3,7 @@ import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 
 import ParentAbi from '../../config/parentAbi';
 import Config from '../../config/config';
+import { APE_ABI } from '../../config/apeTokenAbi';
 
 function Kennel({ login, logout }) {
   const Web3Api = useMoralisWeb3Api();
@@ -59,25 +60,54 @@ function Kennel({ login, logout }) {
     });
   };
 
+  const handleApprove = async (ape_instance) => {
+    const approveStatus = await ape_instance.isApprovedForAll(account, Config.PARENT_ADDRESS)
+    const emptyAddress = /^0x0+$/.test(approveStatus);
+    console.log(emptyAddress)
+    if(emptyAddress) {
+      const approve = await ape_instance.setApprovalForAll(Config.PARENT_ADDRESS, true)
+      return approve
+    } else {
+      return;
+    }
+  }
+
   const depositBayc = async () => {
-    const web3Provider = Moralis.web3;
-    const contract = new ethers.Contract(
-      Config.PARENT_ADDRESS,
-      ParentAbi,
-      web3Provider
-    );
-    const signer = web3Provider.getSigner();
-    const instance = await contract.connect(signer);
+    try {
+      const web3Provider = Moralis.web3;
+      const contract = new ethers.Contract(
+        Config.PARENT_ADDRESS,
+        ParentAbi,
+        web3Provider
+      );
 
-    const transaction = await instance.depositBeta(2, {
-      gasLimit: '100000',
-    });
+      const ape_contract = new ethers.Contract(
+        ape[0].token_address,
+        APE_ABI,
+        web3Provider
+      );
 
-    setIsTx(true)
-    await transaction.wait();
-    setIsTx(false)
+      const signer = web3Provider.getSigner();
 
-    console.log('Deposited', transaction);
+      const ape_instance = await ape_contract.connect(signer);
+      await handleApprove(ape_instance)
+
+      const instance = await contract.connect(signer);
+  
+      const transaction = await instance.depositBeta(ape[0].token_id, {
+        gasLimit: '200000',
+      });
+  
+      setIsTx(true)
+      await transaction.wait();
+      setIsTx(false)
+  
+      console.log('Deposited', transaction);
+    } catch(error) {
+      console.log(error);
+      setIsTx(false)
+    }
+    
   };
 
   const fetchNFTsForContract = async () => {
