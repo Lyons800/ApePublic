@@ -2371,21 +2371,24 @@ a {
 }
 
 
-.scroll-box__container::-webkit-scrollbar-track
+.scroll-box__container::-webkit-scrollbar-track,
+.deposited-box__container::-webkit-scrollbar-track
 {
 	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 	border-radius: 10px;
 	background-color: #F5F5F5;
 }
 
-.scroll-box__container::-webkit-scrollbar
+.scroll-box__container::-webkit-scrollbar,
+.deposited-box__container::-webkit-scrollbar
 {
 	width: 12px;
 	background-color: #F5F5F5;
   border-radius: 10px;
 }
 
-.scroll-box__container::-webkit-scrollbar-thumb
+.scroll-box__container::-webkit-scrollbar-thumb,
+.deposited-box__container::-webkit-scrollbar-thumb
 {
 	border-radius: 10px;
 	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
