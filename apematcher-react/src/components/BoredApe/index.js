@@ -697,7 +697,7 @@ function BoredApe({ login, logout }) {
     const approveStatus = await ape_instance.isApprovedForAll(account, parentAddress)
     const emptyAddress = /^0x0+$/.test(approveStatus);
     console.log(emptyAddress)
-    if(emptyAddress) {
+    if (emptyAddress) {
       const approve = await ape_instance.setApprovalForAll(parentAddress, true)
       return approve
     } else {
@@ -903,7 +903,7 @@ function BoredApe({ login, logout }) {
                               {item.name}#{item.token_id}
                             </p>
                           </div>
-                          <button className="deposited-box_button" 
+                          <button className="deposited-box_button"
                             onClick={() => {
                               let d = ape.find(
                                 (r) => r.token_id === item.token_id
@@ -920,12 +920,12 @@ function BoredApe({ login, logout }) {
                                   Selected
                                 </>
                               )
-                              :
-                              (
-                                <>
-                                  Select
-                                </>
-                              )
+                                :
+                                (
+                                  <>
+                                    Select
+                                  </>
+                                )
                             }
                           </button>
                         </div>
@@ -944,7 +944,7 @@ function BoredApe({ login, logout }) {
                   </div>
                 )}
               </div>
-              {account ? ape.length > 0 && (
+              {account && !isTx && ape.length > 0 && (
                 <div className="bayc_button">
                   {/* {bapes.length < 0 && ( */}
                   {/* <button
@@ -966,9 +966,9 @@ function BoredApe({ login, logout }) {
                     Deposit
                   </button>
                 </div>
-              )
-                :
-                (
+              )}
+              {
+                !account && (
                   <div className="bayc_button">
                     <button
                       className="btn_connect"
