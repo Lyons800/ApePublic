@@ -605,6 +605,29 @@ function BoredApe({ login, logout }) {
     }
   };
 
+  const withdrawBayc = async (tokenID, id) => {
+    try {
+      const web3Provider = Moralis.web3;
+      const contract = new ethers.Contract(
+        parentAddress,
+        PARENT_ABI,
+        web3Provider
+      );
+  
+      const signer = web3Provider.getSigner();
+      const instance = await contract.connect(signer);
+      const transaction = await instance.withdrawAlpha(tokenID, id);
+  
+      setIsTx(true)
+      await transaction.wait();
+      setIsTx(false)
+    } catch(e) {
+      console.log(e)
+      setIsTx(false)
+    }
+    
+  }
+
   const fetchNFTsForContract = async () => {
     const options = {
       chain: 'rinkeby',
@@ -634,9 +657,9 @@ function BoredApe({ login, logout }) {
     setApeIds([...ids])
   };
 
-  const getBAYCdetails = async (contract, i) => {
-    let count = await contract.BAYC(i)
-    return count;
+  const getBAYCdetails = async (contract, index) => {
+    let bayc = await contract.BAYC(index)
+    return {bayc, index};
   }
 
   useEffect(async () => {
@@ -666,8 +689,8 @@ function BoredApe({ login, logout }) {
         console.log(e)
       })
     let baycIDs = [];
-    allBAYC.map(bayc => {
-      baycIDs.push(bayc.tokenID.toNumber().toString())
+    allBAYC.map(item => {
+      baycIDs.push(item.bayc.tokenID.toNumber().toString())
     })
 
     const options = {
@@ -677,9 +700,14 @@ function BoredApe({ login, logout }) {
     };
     const nfts = await Web3Api.account.getNFTsForContract(options);
     var filtered = nfts.result.filter(function (item) {
-      return baycIDs.indexOf(item.token_id) !== -1;
+      if(baycIDs.indexOf(item.token_id) !== -1) {
+        let original = [];
+        let matchedBayc = allBAYC.filter(bayc => bayc.bayc.tokenID.toNumber().toString() === item.token_id)
+        item["bayc_id"] = matchedBayc[0].index
+        original.push(item)
+        return original
+      }
     });
-    console.log(filtered)
     setDepositedBayc(filtered)
   }, [baycCount])
 
@@ -855,16 +883,7 @@ function BoredApe({ login, logout }) {
                             </p>
                           </div>
                           <button className="deposited-box_button"
-                            onClick={() => {
-                              let d = ape.find(
-                                (r) => r.token_id === item.token_id
-                              );
-                              if (!d) {
-                                chooseApe(item);
-                              } else {
-                                deselect(item);
-                              }
-                            }}>
+                            onClick={() => withdrawBayc(item.token_id, item.bayc_id)}>
                             {
                               apeIds.indexOf(item.token_id) > -1 ? (
                                 <>
