@@ -77,7 +77,7 @@ contract ChildContract is IERC721Receiver{
 
         _depositedPrimary[msg.sender].remove(tokenId);
 
-        parent.flagContract(uint256 tokenId);
+        parentInterface(tokenId).flagContract(tokenId);
 
         GAMMA.safeTransferFrom(address(this), msg.sender, tokenId);
     }

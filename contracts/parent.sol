@@ -201,4 +201,16 @@ contract ParentContract {
     function setClaimContract(address _grapes) public {
         claimContract = deployedContract(_grapes);
     }
+
+    function getBAYCcount() public view returns(uint) {
+        return BAYCcount;
+    }
+
+    function getMAYCcount() public view returns(uint) {
+        return MAYCcount;
+    }
+
+    function getChildCount() public view returns(uint) {
+        return count;
+    }
 }

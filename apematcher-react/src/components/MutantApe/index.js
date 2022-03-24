@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 
-import ParentAbi from '../../config/parentAbi';
+import { PARENT_ABI } from '../../config/parentAbi';
 import Config from '../../config/config';
 import { APE_ABI } from '../../config/apeTokenAbi';
 
@@ -36,7 +36,7 @@ function MutantApe({login, logout}) {
   const mutantAddress = '';
   const mutantAbi = '';
 
-  const parentAddress = '0xA31aA8F02E5B7dCCbF865A8b58C9955b2f6D5183';
+  const parentAddress = '0x4484983C2be8b0Af364b871521172D7C4E8C1D51';
 
   const checkEligibility = async () => {
     // console.log(ape, 'selected apes');
@@ -79,7 +79,7 @@ function MutantApe({login, logout}) {
       const web3Provider = Moralis.web3;
       const contract = new ethers.Contract(
         parentAddress,
-        ParentAbi,
+        PARENT_ABI,
         web3Provider
       );
   

@@ -2,12 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 
 import Config from '../../config/config';
+import { PARENT_ABI } from "../../config/parentAbi"
 import { APE_ABI } from '../../config/apeTokenAbi';
 
 function BoredApe({ login, logout }) {
   const Web3Api = useMoralisWeb3Api();
 
   const [bayc, setBayc] = useState([]);
+  const [depositedBayc, setDepositedBayc] = useState([]);
   //   selected apes
   const [ape, setApe] = useState([]);
   const [apeIds, setApeIds] = useState([])
@@ -15,6 +17,7 @@ function BoredApe({ login, logout }) {
   const [bapes, setBapes] = useState([]);
   const [deposit, setDeposit] = useState(false);
   const [isTx, setIsTx] = useState(false)
+  const [baycCount, setBaycCount] = useState(0)
 
   const {
     authenticate,
@@ -31,480 +34,480 @@ function BoredApe({ login, logout }) {
 
   const ethers = Moralis.web3Library;
 
-  const daiAddress = '0x26231e65A13578F75279dCEB6eea2CEECE9Ee620';
+  const daiAddress = '0x4347E543f90a51C5A0FFA6443C32B9fbb9e04ECe';
   const daiAbi = [
     {
-      inputs: [],
-      stateMutability: 'nonpayable',
-      type: 'constructor',
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
     },
     {
-      anonymous: false,
-      inputs: [
+      "anonymous": false,
+      "inputs": [
         {
-          indexed: true,
-          internalType: 'address',
-          name: 'account',
-          type: 'address',
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
         },
         {
-          indexed: true,
-          internalType: 'uint256',
-          name: 'amount',
-          type: 'uint256',
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
         },
         {
-          indexed: false,
-          internalType: 'uint256',
-          name: 'timestamp',
-          type: 'uint256',
-        },
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
       ],
-      name: 'AirDrop',
-      type: 'event',
+      "name": "AirDrop",
+      "type": "event"
     },
     {
-      anonymous: false,
-      inputs: [
+      "anonymous": false,
+      "inputs": [
         {
-          indexed: true,
-          internalType: 'uint256',
-          name: 'tokenId',
-          type: 'uint256',
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
         },
         {
-          indexed: true,
-          internalType: 'address',
-          name: 'account',
-          type: 'address',
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
         },
         {
-          indexed: false,
-          internalType: 'uint256',
-          name: 'timestamp',
-          type: 'uint256',
-        },
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
       ],
-      name: 'AlphaClaimed',
-      type: 'event',
+      "name": "AlphaClaimed",
+      "type": "event"
     },
     {
-      anonymous: false,
-      inputs: [
+      "anonymous": false,
+      "inputs": [
         {
-          indexed: true,
-          internalType: 'uint256',
-          name: 'tokenId',
-          type: 'uint256',
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
         },
         {
-          indexed: true,
-          internalType: 'address',
-          name: 'account',
-          type: 'address',
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
         },
         {
-          indexed: false,
-          internalType: 'uint256',
-          name: 'timestamp',
-          type: 'uint256',
-        },
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
       ],
-      name: 'BetaClaimed',
-      type: 'event',
+      "name": "BetaClaimed",
+      "type": "event"
     },
     {
-      anonymous: false,
-      inputs: [
+      "anonymous": false,
+      "inputs": [
         {
-          indexed: false,
-          internalType: 'uint256',
-          name: '_claimDuration',
-          type: 'uint256',
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_claimDuration",
+          "type": "uint256"
         },
         {
-          indexed: false,
-          internalType: 'uint256',
-          name: '_claimStartTime',
-          type: 'uint256',
-        },
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_claimStartTime",
+          "type": "uint256"
+        }
       ],
-      name: 'ClaimStart',
-      type: 'event',
+      "name": "ClaimStart",
+      "type": "event"
     },
     {
-      inputs: [],
-      name: 'claimTokens',
-      outputs: [],
-      stateMutability: 'payable',
-      type: 'function',
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "GammaClaimed",
+      "type": "event"
     },
     {
-      inputs: [],
-      name: 'claimUnclaimedTokens',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
     },
     {
-      anonymous: false,
-      inputs: [
+      "anonymous": false,
+      "inputs": [
         {
-          indexed: true,
-          internalType: 'uint256',
-          name: 'tokenId',
-          type: 'uint256',
-        },
-        {
-          indexed: true,
-          internalType: 'address',
-          name: 'account',
-          type: 'address',
-        },
-        {
-          indexed: false,
-          internalType: 'uint256',
-          name: 'timestamp',
-          type: 'uint256',
-        },
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
       ],
-      name: 'GammaClaimed',
-      type: 'event',
+      "name": "Paused",
+      "type": "event"
     },
     {
-      anonymous: false,
-      inputs: [
+      "anonymous": false,
+      "inputs": [
         {
-          indexed: true,
-          internalType: 'address',
-          name: 'previousOwner',
-          type: 'address',
-        },
-        {
-          indexed: true,
-          internalType: 'address',
-          name: 'newOwner',
-          type: 'address',
-        },
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
       ],
-      name: 'OwnershipTransferred',
-      type: 'event',
+      "name": "Unpaused",
+      "type": "event"
     },
     {
-      anonymous: false,
-      inputs: [
+      "inputs": [],
+      "name": "ALPHA_DISTRIBUTION_AMOUNT",
+      "outputs": [
         {
-          indexed: false,
-          internalType: 'address',
-          name: 'account',
-          type: 'address',
-        },
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
-      name: 'Paused',
-      type: 'event',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'renounceOwnership',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
+      "inputs": [],
+      "name": "BETA_DISTRIBUTION_AMOUNT",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [
+      "inputs": [],
+      "name": "GAMMA_DISTRIBUTION_AMOUNT",
+      "outputs": [
         {
-          internalType: 'uint256',
-          name: '_claimDuration',
-          type: 'uint256',
-        },
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
-      name: 'startClaimablePeriod',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [
+      "inputs": [],
+      "name": "alpha",
+      "outputs": [
         {
-          internalType: 'address',
-          name: 'newOwner',
-          type: 'address',
-        },
+          "internalType": "contract ERC721Enumerable",
+          "name": "",
+          "type": "address"
+        }
       ],
-      name: 'transferOwnership',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      anonymous: false,
-      inputs: [
+      "inputs": [
         {
-          indexed: false,
-          internalType: 'address',
-          name: 'account',
-          type: 'address',
-        },
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
-      name: 'Unpaused',
-      type: 'event',
+      "name": "alphaClaimed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'alpha',
-      outputs: [
+      "inputs": [],
+      "name": "beta",
+      "outputs": [
         {
-          internalType: 'contract ERC721Enumerable',
-          name: '',
-          type: 'address',
-        },
+          "internalType": "contract ERC721Enumerable",
+          "name": "",
+          "type": "address"
+        }
       ],
-      stateMutability: 'view',
-      type: 'function',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'ALPHA_DISTRIBUTION_AMOUNT',
-      outputs: [
+      "inputs": [
         {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
-      stateMutability: 'view',
-      type: 'function',
+      "name": "betaClaimed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [
+      "inputs": [],
+      "name": "claimDuration",
+      "outputs": [
         {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
-      name: 'alphaClaimed',
-      outputs: [
-        {
-          internalType: 'bool',
-          name: '',
-          type: 'bool',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'beta',
-      outputs: [
+      "inputs": [],
+      "name": "claimStartTime",
+      "outputs": [
         {
-          internalType: 'contract ERC721Enumerable',
-          name: '',
-          type: 'address',
-        },
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
-      stateMutability: 'view',
-      type: 'function',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'BETA_DISTRIBUTION_AMOUNT',
-      outputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
+      "inputs": [],
+      "name": "claimTokens",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
     },
     {
-      inputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      name: 'betaClaimed',
-      outputs: [
-        {
-          internalType: 'bool',
-          name: '',
-          type: 'bool',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
+      "inputs": [],
+      "name": "claimUnclaimedTokens",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'claimDuration',
-      outputs: [
+      "inputs": [],
+      "name": "gamma",
+      "outputs": [
         {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
+          "internalType": "contract ERC721Enumerable",
+          "name": "",
+          "type": "address"
+        }
       ],
-      stateMutability: 'view',
-      type: 'function',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'claimStartTime',
-      outputs: [
+      "inputs": [
         {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
-      stateMutability: 'view',
-      type: 'function',
+      "name": "gammaClaimed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'gamma',
-      outputs: [
+      "inputs": [
         {
-          internalType: 'contract ERC721Enumerable',
-          name: '',
-          type: 'address',
-        },
+          "internalType": "address",
+          "name": "_account",
+          "type": "address"
+        }
       ],
-      stateMutability: 'view',
-      type: 'function',
+      "name": "getClaimableTokenAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'GAMMA_DISTRIBUTION_AMOUNT',
-      outputs: [
+      "inputs": [
         {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
+          "internalType": "address",
+          "name": "_account",
+          "type": "address"
+        }
       ],
-      stateMutability: 'view',
-      type: 'function',
+      "name": "getClaimableTokenAmountAndGammaToClaim",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [
+      "inputs": [],
+      "name": "grapesToken",
+      "outputs": [
         {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
       ],
-      name: 'gammaClaimed',
-      outputs: [
-        {
-          internalType: 'bool',
-          name: '',
-          type: 'bool',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
         {
-          internalType: 'address',
-          name: '_account',
-          type: 'address',
-        },
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
       ],
-      name: 'getClaimableTokenAmount',
-      outputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [
+      "inputs": [],
+      "name": "paused",
+      "outputs": [
         {
-          internalType: 'address',
-          name: '_account',
-          type: 'address',
-        },
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
       ],
-      name: 'getClaimableTokenAmountAndGammaToClaim',
-      outputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'grapesToken',
-      outputs: [
-        {
-          internalType: 'contract IERC20',
-          name: '',
-          type: 'address',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'owner',
-      outputs: [
+      "inputs": [
         {
-          internalType: 'address',
-          name: '',
-          type: 'address',
-        },
+          "internalType": "uint256",
+          "name": "_claimDuration",
+          "type": "uint256"
+        }
       ],
-      stateMutability: 'view',
-      type: 'function',
+      "name": "startClaimablePeriod",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'paused',
-      outputs: [
+      "inputs": [],
+      "name": "totalClaimed",
+      "outputs": [
         {
-          internalType: 'bool',
-          name: '',
-          type: 'bool',
-        },
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
-      stateMutability: 'view',
-      type: 'function',
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      inputs: [],
-      name: 'totalClaimed',
-      outputs: [
+      "inputs": [
         {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
       ],
-      stateMutability: 'view',
-      type: 'function',
-    },
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
   ];
 
   const checkEligibility = async () => {
@@ -531,167 +534,22 @@ function BoredApe({ login, logout }) {
     console.log(bapes);
   }, [bapes]);
 
-  const parentAbi = [
-    { inputs: [], stateMutability: 'nonpayable', type: 'constructor' },
-    {
-      inputs: [],
-      name: 'ALPHA',
-      outputs: [
-        {
-          internalType: 'contract ERC721Enumerable',
-          name: '',
-          type: 'address',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-      name: 'BAYC',
-      outputs: [
-        { internalType: 'address', name: 'wallet', type: 'address' },
-        { internalType: 'uint256', name: 'tokenID', type: 'uint256' },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [],
-      name: 'BETA',
-      outputs: [
-        {
-          internalType: 'contract ERC721Enumerable',
-          name: '',
-          type: 'address',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [],
-      name: 'GAMMA',
-      outputs: [
-        {
-          internalType: 'contract ERC721Enumerable',
-          name: '',
-          type: 'address',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-      name: 'MAYC',
-      outputs: [
-        { internalType: 'address', name: 'wallet', type: 'address' },
-        { internalType: 'uint256', name: 'tokenID', type: 'uint256' },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-      name: 'child',
-      outputs: [
-        { internalType: 'contract ChildContract', name: '', type: 'address' },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [{ internalType: 'uint256', name: '_id', type: 'uint256' }],
-      name: 'depositAlpha',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [{ internalType: 'uint256', name: '_id', type: 'uint256' }],
-      name: 'depositBeta',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [{ internalType: 'uint256', name: '_id', type: 'uint256' }],
-      name: 'depositGamma',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        { internalType: 'uint256', name: '_contract', type: 'uint256' },
-        { internalType: 'uint256', name: '_id', type: 'uint256' },
-      ],
-      name: 'matchAlpha',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        { internalType: 'uint256', name: '_contract', type: 'uint256' },
-        { internalType: 'uint256', name: '_id', type: 'uint256' },
-      ],
-      name: 'matchBeta',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        { internalType: 'uint256', name: '_id', type: 'uint256' },
-        { internalType: 'uint256', name: '_idBAYC', type: 'uint256' },
-      ],
-      name: 'matchGammaBAYC',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        { internalType: 'uint256', name: '_id', type: 'uint256' },
-        { internalType: 'uint256', name: '_idMAYC', type: 'uint256' },
-      ],
-      name: 'matchGammaMAYC',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [{ internalType: 'address', name: '_grapes', type: 'address' }],
-      name: 'setClaimContract',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
-        { internalType: 'uint256', name: '_index', type: 'uint256' },
-      ],
-      name: 'withdrawAlpha',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
-        { internalType: 'uint256', name: '_index', type: 'uint256' },
-      ],
-      name: 'withdrawBeta',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-  ];
+  const parentAddress = '0x4484983C2be8b0Af364b871521172D7C4E8C1D51';
 
-  const parentAddress = '0xA31aA8F02E5B7dCCbF865A8b58C9955b2f6D5183';
+  const handleGetBayc = async () => {
+    const web3Provider = Moralis.web3;
+    const contract = new ethers.Contract(
+      parentAddress,
+      PARENT_ABI,
+      web3Provider
+    );
+    const signer = web3Provider.getSigner();
+
+    const parent_instance = await contract.connect(signer);
+    let baycCount = await parent_instance.getBAYCcount()
+    console.log(baycCount.toNumber())
+    setBaycCount(baycCount.toNumber())
+  }
 
   const handleApprove = async (ape_instance) => {
     const approveStatus = await ape_instance.isApprovedForAll(account, parentAddress)
@@ -709,12 +567,12 @@ function BoredApe({ login, logout }) {
       const web3Provider = Moralis.web3;
       const contract = new ethers.Contract(
         parentAddress,
-        parentAbi,
+        PARENT_ABI,
         web3Provider
       );
 
       const ape_contract = new ethers.Contract(
-        ape[0].token_address,
+        Config.BAYC_ADDRESS,
         APE_ABI,
         web3Provider
       );
@@ -723,6 +581,10 @@ function BoredApe({ login, logout }) {
         daiAbi,
         web3Provider
       );
+      let depositTokenIDs = [];
+      ape.map(item => {
+        depositTokenIDs.push(item.token_id)
+      })
 
       const signer = web3Provider.getSigner();
 
@@ -731,7 +593,7 @@ function BoredApe({ login, logout }) {
 
       const instance = await contract.connect(signer);
 
-      const transaction = await instance.depositAlpha(ape[0].token_id);
+      const transaction = await instance.depositAlpha(depositTokenIDs);
 
       setIsTx(true)
       await transaction.wait();
@@ -756,6 +618,7 @@ function BoredApe({ login, logout }) {
   useEffect(() => {
     if (isAuthenticated) {
       fetchNFTsForContract();
+      handleGetBayc();
     }
   }, [isAuthenticated]);
 
@@ -771,9 +634,54 @@ function BoredApe({ login, logout }) {
     setApeIds([...ids])
   };
 
-  useEffect(() => {
-    console.log(ape, 'apessssssss');
-  }, [ape]);
+  const getBAYCdetails = async (contract, i) => {
+    let count = await contract.BAYC(i)
+    return count;
+  }
+
+  useEffect(async () => {
+    if (baycCount === 0) {
+      return;
+    }
+
+    const web3Provider = Moralis.web3;
+    const contract = new ethers.Contract(
+      parentAddress,
+      PARENT_ABI,
+      web3Provider
+    );
+
+    const signer = web3Provider.getSigner();
+    const instance = await contract.connect(signer);
+
+    const promises = [];
+    for (let i = 0; i < baycCount; i++) {
+      promises.push(getBAYCdetails(instance, i))
+    }
+
+    let allBAYC = await Promise.all(promises).then((result) => {
+      return result
+    })
+      .catch((e) => {
+        console.log(e)
+      })
+    let baycIDs = [];
+    allBAYC.map(bayc => {
+      baycIDs.push(bayc.tokenID.toNumber().toString())
+    })
+
+    const options = {
+      chain: 'rinkeby',
+      address: parentAddress,
+      token_address: Config.BAYC_ADDRESS,
+    };
+    const nfts = await Web3Api.account.getNFTsForContract(options);
+    var filtered = nfts.result.filter(function (item) {
+      return baycIDs.indexOf(item.token_id) !== -1;
+    });
+    console.log(filtered)
+    setDepositedBayc(filtered)
+  }, [baycCount])
 
   return (
     <div
@@ -923,6 +831,50 @@ function BoredApe({ login, logout }) {
                                 (
                                   <>
                                     Select
+                                  </>
+                                )
+                            }
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {depositedBayc.map((item) => {
+                      return (
+                        <div className="deposited-box" key={item.token_id}>
+                          <div className="deposited-box_group">
+                            <div className="deposited-box_image">
+                              <img
+                                src={`https://ipfs.moralis.io:2053/ipfs/${item &&
+                                  JSON.parse(item.metadata)?.image.substring(7)
+                                  }`}
+                                alt="asas"
+                              />
+                            </div>
+                            <p className="deposited-box_title">
+                              {item.name}#{item.token_id}
+                            </p>
+                          </div>
+                          <button className="deposited-box_button"
+                            onClick={() => {
+                              let d = ape.find(
+                                (r) => r.token_id === item.token_id
+                              );
+                              if (!d) {
+                                chooseApe(item);
+                              } else {
+                                deselect(item);
+                              }
+                            }}>
+                            {
+                              apeIds.indexOf(item.token_id) > -1 ? (
+                                <>
+                                  Claim
+                                </>
+                              )
+                                :
+                                (
+                                  <>
+                                    Withdraw
                                   </>
                                 )
                             }
