@@ -13,11 +13,11 @@ import "hardhat/console.sol";
 contract grapes is Ownable, Pausable {
 
     using SafeERC20 for IERC20;
-    IERC20 public immutable grapesToken = IERC20(0xAAC129A3e6e9f44147951dDD5655d66c312A4713);
+    IERC20 public immutable grapesToken = IERC20(0xeFBa384c8106E677b496cFa3afD05Cb7F8fD6D70);
 
-    ERC721Enumerable public alpha = ERC721Enumerable(0x3b014c0307Ad9dc4262F1696BC463Fd3c6dC4679);
-    ERC721Enumerable public beta = ERC721Enumerable(0x6E111eaf89bbfC1210F413f63f0A35D34a75243f);
-    ERC721Enumerable public gamma = ERC721Enumerable(0xDf159010A8d1B173262EBb3D7b5393Dc0333301d);
+    ERC721Enumerable public alpha = ERC721Enumerable(0x8f2495Bdc0cfe864B5098bdE25698511a1973Af7);
+    ERC721Enumerable public beta = ERC721Enumerable(0xD7eeB4B6e97700c8dba03B897f8BA8b8ed39E1fd);
+    ERC721Enumerable public gamma = ERC721Enumerable(0x069225faBD2f7bEA2Fa32Bdf1A035C0311Bd7BE0);
 
     uint256 public ALPHA_DISTRIBUTION_AMOUNT = 10094000000000000000000;
     uint256 public BETA_DISTRIBUTION_AMOUNT = 2042000000000000000000;
@@ -77,7 +77,7 @@ contract grapes is Ownable, Pausable {
 
 
 
-    function claimTokens() external payable{
+    function claimTokens() external {
         //require(block.timestamp >= claimStartTime && block.timestamp < claimStartTime + claimDuration, "Claimable period is finished");
         require((beta.balanceOf(msg.sender) > 0 || alpha.balanceOf(msg.sender) > 0), "Nothing to claim");
 
@@ -112,7 +112,7 @@ contract grapes is Ownable, Pausable {
             }
         }
 
-        grapesToken.safeTransfer(msg.sender, tokensToClaim);
+        grapesToken.transfer(msg.sender, tokensToClaim);
 
         totalClaimed += tokensToClaim;
         emit AirDrop(msg.sender, tokensToClaim, block.timestamp);

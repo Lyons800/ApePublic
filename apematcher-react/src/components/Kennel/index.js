@@ -4,12 +4,14 @@ import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 import { PARENT_ABI } from '../../config/parentAbi';
 import Config from '../../config/config';
 import { APE_ABI } from '../../config/apeTokenAbi';
+import { GRAPE_ABI } from '../../config/grapeAbi'
 
 function Kennel({ login, logout }) {
   const Web3Api = useMoralisWeb3Api();
 
   // apes from nft api
   const [bayc, setBayc] = useState([]);
+  const [depositedBayc, setDepositedBayc] = useState([]);
   //   selected apes
   const [ape, setApe] = useState([]);
   const [apeIds, setApeIds] = useState([])
@@ -17,6 +19,8 @@ function Kennel({ login, logout }) {
   const [bapes, setBapes] = useState([]);
   const [deposit, setDeposit] = useState(false);
   const [isTx, setIsTx] = useState(false)
+  const [baycCount, setBaycCount] = useState(0)
+  const [claimableAmount, setClaimableAmount] = useState(0)
 
   const {
     authenticate,
@@ -35,8 +39,6 @@ function Kennel({ login, logout }) {
 
   const mutantAddress = '';
   const mutantAbi = '';
-
-  const parentAddress = '0x4484983C2be8b0Af364b871521172D7C4E8C1D51';
 
   const checkEligibility = async () => {
     // console.log(ape, 'selected apes');
@@ -62,10 +64,26 @@ function Kennel({ login, logout }) {
     });
   };
 
+  const handleGetBayc = async () => {
+    const web3Provider = Moralis.web3;
+    if(web3Provider === null) return
+    const contract = new ethers.Contract(
+      Config.PARENT_ADDRESS,
+      PARENT_ABI,
+      web3Provider
+    );
+    const signer = web3Provider.getSigner();
+
+    const parent_instance = await contract.connect(signer);
+    let baycCount = await parent_instance.getBAYCcount()
+    console.log(baycCount.toNumber())
+    setBaycCount(baycCount.toNumber())
+  }
+
   const handleApprove = async (ape_instance) => {
-    const approveStatus = await ape_instance.isApprovedForAll(account, parentAddress)
+    const approveStatus = await ape_instance.isApprovedForAll(account, Config.PARENT_ADDRESS)
     if(!approveStatus) {
-      const approve = await ape_instance.setApprovalForAll(parentAddress, true)
+      const approve = await ape_instance.setApprovalForAll(Config.PARENT_ADDRESS, true)
       await approve.wait()
       return;
     } else {
@@ -77,16 +95,21 @@ function Kennel({ login, logout }) {
     try {
       const web3Provider = Moralis.web3;
       const contract = new ethers.Contract(
-        parentAddress,
+        Config.PARENT_ADDRESS,
         PARENT_ABI,
         web3Provider
       );
 
       const ape_contract = new ethers.Contract(
-        ape[0].token_address,
+        Config.KENNLEL_ADDRESS,
         APE_ABI,
         web3Provider
       );
+
+      let depositTokenIDs = [];
+      ape.map(item => {
+        depositTokenIDs.push(item.token_id)
+      })
 
       const signer = web3Provider.getSigner();
 
@@ -94,20 +117,73 @@ function Kennel({ login, logout }) {
       await handleApprove(ape_instance)
 
       const instance = await contract.connect(signer);
+
+      const transaction = await instance.depositGamma(depositTokenIDs);
+
+      setIsTx(true)
+      await transaction.wait();
+      setIsTx(false)
+      console.log('Deposited', transaction);
+    } catch (error) {
+      console.log(error);
+      setIsTx(false)
+    }
+  };
+
+  const handleClaimOrWithdraw = (tokenID, id) => {
+    if(claimableAmount > 0) {
+      console.log("claimToken")
+      claimToken()
+    } else {
+      console.log("withdrawBayc")
+      withdrawBayc(tokenID, id)
+    }
+  }
+
+  const claimToken = async () => {
+    try {
+      const web3Provider = Moralis.web3;
+      const contract = new ethers.Contract(
+        Config.GRAPE_ADDRESS,
+        GRAPE_ABI,
+        web3Provider
+      );
   
-      const transaction = await instance.depositGamma(ape[0].token_id);
+      const signer = web3Provider.getSigner();
+      const instance = await contract.connect(signer);
+      const transaction = await instance.claimTokens();
   
       setIsTx(true)
       await transaction.wait();
       setIsTx(false)
+    } catch(e) {
+      console.log(e)
+      setIsTx(false)
+    }
+  }
+
+  const withdrawBayc = async (tokenID, id) => {
+    try {
+      const web3Provider = Moralis.web3;
+      const contract = new ethers.Contract(
+        Config.PARENT_ADDRESS,
+        PARENT_ABI,
+        web3Provider
+      );
   
-      console.log('Deposited', transaction);
-    } catch(error) {
-      console.log(error);
+      const signer = web3Provider.getSigner();
+      const instance = await contract.connect(signer);
+      const transaction = await instance.withdrawBeta(tokenID, id);
+  
+      setIsTx(true)
+      await transaction.wait();
+      setIsTx(false)
+    } catch(e) {
+      console.log(e)
       setIsTx(false)
     }
     
-  };
+  }
 
   const fetchNFTsForContract = async () => {
     const options = {
@@ -122,6 +198,7 @@ function Kennel({ login, logout }) {
   useEffect(() => {
     if (isAuthenticated) {
       fetchNFTsForContract();
+      handleGetBayc();
     }
   }, [isAuthenticated]);
 
@@ -137,9 +214,78 @@ function Kennel({ login, logout }) {
     setApeIds([...ids])
   };
 
-  useEffect(() => {
-    console.log(ape, 'apessssssss');
-  }, [ape]);
+  const getBAYCdetails = async (contract, index) => {
+    let bayc = await contract.BAYC(index)
+    return {bayc, index};
+  }
+
+  useEffect(async () => {
+    if (baycCount === 0) {
+      return;
+    }
+
+    const web3Provider = Moralis.web3;
+    const contract = new ethers.Contract(
+      Config.PARENT_ADDRESS,
+      PARENT_ABI,
+      web3Provider
+    );
+
+    const signer = web3Provider.getSigner();
+    const instance = await contract.connect(signer);
+
+    const promises = [];
+    for (let i = 0; i < baycCount; i++) {
+      promises.push(getBAYCdetails(instance, i))
+    }
+
+    let allBAYC = await Promise.all(promises).then((result) => {
+      return result
+    })
+      .catch((e) => {
+        console.log(e)
+      })
+    let baycIDs = [];
+    allBAYC.map(item => {
+      baycIDs.push(item.bayc.tokenID.toNumber().toString())
+    })
+
+    const options = {
+      chain: 'rinkeby',
+      address: Config.PARENT_ADDRESS,
+      token_address: Config.BAYC_ADDRESS,
+    };
+    const nfts = await Web3Api.account.getNFTsForContract(options);
+    var filtered = nfts.result.filter(function (item) {
+      if(baycIDs.indexOf(item.token_id) !== -1) {
+        let original = [];
+        let matchedBayc = allBAYC.filter(bayc => bayc.bayc.tokenID.toNumber().toString() === item.token_id)
+        item["bayc_id"] = matchedBayc[0].index
+        original.push(item)
+        return original
+      }
+    });
+    setDepositedBayc(filtered)
+  }, [baycCount])
+
+  useEffect(async () => {
+    if(depositedBayc.length === 0) return;
+
+    const web3Provider = Moralis.web3;
+    const grape_contract = new ethers.Contract(
+      Config.GRAPE_ADDRESS,
+      GRAPE_ABI,
+      web3Provider
+    );
+
+    const signer = web3Provider.getSigner();
+    const instance = await grape_contract.connect(signer);
+    let amount = await instance.getClaimableTokenAmount(account)
+    console.log(amount / 10**18)
+    if(amount / 10**18 > 0) {
+      setClaimableAmount(amount / 10**18)
+    }
+  }, [depositedBayc, isTx])
   return (
     <div
       data-hover="false"
@@ -309,7 +455,7 @@ function Kennel({ login, logout }) {
                 )}
               </div>
               {
-                account ? ape.length > 0 && (
+                account && !isTx && ape.length > 0 && (
                   <div className="bayc_button">
                     {/* {bapes.length < 0 && ( */}
                     {/* <button
@@ -331,23 +477,22 @@ function Kennel({ login, logout }) {
                       Deposit
                     </button>
                   </div>
+                )}
+                 {
+                !account && (
+                  <div className="bayc_button">
+                    <button
+                      className="btn_connect"
+                      onClick={() => {
+                        logout()
+                        login()
+                      }}
+                    >
+                      Connect
+                    </button>
+                  </div>
                 )
-                  :
-                  (
-                    <div className="bayc_button">
-                      <button
-                        className="btn_connect"
-                        onClick={() => {
-                          logout()
-                          login()
-                        }}
-                      >
-                        Connect
-                      </button>
-                    </div>
-                  )
               }
-
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 import Config from '../../config/config';
 import { PARENT_ABI } from "../../config/parentAbi"
 import { APE_ABI } from '../../config/apeTokenAbi';
+import { GRAPE_ABI } from '../../config/grapeAbi'
 
 function BoredApe({ login, logout }) {
   const Web3Api = useMoralisWeb3Api();
@@ -18,6 +19,7 @@ function BoredApe({ login, logout }) {
   const [deposit, setDeposit] = useState(false);
   const [isTx, setIsTx] = useState(false)
   const [baycCount, setBaycCount] = useState(0)
+  const [claimableAmount, setClaimableAmount] = useState(0)
 
   const {
     authenticate,
@@ -530,16 +532,11 @@ function BoredApe({ login, logout }) {
     });
   };
 
-  useEffect(() => {
-    console.log(bapes);
-  }, [bapes]);
-
-  const parentAddress = '0x4484983C2be8b0Af364b871521172D7C4E8C1D51';
-
   const handleGetBayc = async () => {
     const web3Provider = Moralis.web3;
+    if(web3Provider === null) return
     const contract = new ethers.Contract(
-      parentAddress,
+      Config.PARENT_ADDRESS,
       PARENT_ABI,
       web3Provider
     );
@@ -552,9 +549,9 @@ function BoredApe({ login, logout }) {
   }
 
   const handleApprove = async (ape_instance) => {
-    const approveStatus = await ape_instance.isApprovedForAll(account, parentAddress)
+    const approveStatus = await ape_instance.isApprovedForAll(account, Config.PARENT_ADDRESS)
     if (!approveStatus) {
-      const approve = await ape_instance.setApprovalForAll(parentAddress, true)
+      const approve = await ape_instance.setApprovalForAll(Config.PARENT_ADDRESS, true)
       await approve.wait()
       return;
     } else {
@@ -566,7 +563,7 @@ function BoredApe({ login, logout }) {
     try {
       const web3Provider = Moralis.web3;
       const contract = new ethers.Contract(
-        parentAddress,
+        Config.PARENT_ADDRESS,
         PARENT_ABI,
         web3Provider
       );
@@ -576,11 +573,7 @@ function BoredApe({ login, logout }) {
         APE_ABI,
         web3Provider
       );
-      const alphaContract = new ethers.Contract(
-        Config.BAYC_ADDRESS,
-        daiAbi,
-        web3Provider
-      );
+
       let depositTokenIDs = [];
       ape.map(item => {
         depositTokenIDs.push(item.token_id)
@@ -605,11 +598,43 @@ function BoredApe({ login, logout }) {
     }
   };
 
+  const handleClaimOrWithdraw = (tokenID, id) => {
+    if(claimableAmount > 0) {
+      console.log("claimToken")
+      claimToken()
+    } else {
+      console.log("withdrawBayc")
+      withdrawBayc(tokenID, id)
+    }
+  }
+
+  const claimToken = async () => {
+    try {
+      const web3Provider = Moralis.web3;
+      const contract = new ethers.Contract(
+        Config.GRAPE_ADDRESS,
+        GRAPE_ABI,
+        web3Provider
+      );
+  
+      const signer = web3Provider.getSigner();
+      const instance = await contract.connect(signer);
+      const transaction = await instance.claimTokens();
+  
+      setIsTx(true)
+      await transaction.wait();
+      setIsTx(false)
+    } catch(e) {
+      console.log(e)
+      setIsTx(false)
+    }
+  }
+
   const withdrawBayc = async (tokenID, id) => {
     try {
       const web3Provider = Moralis.web3;
       const contract = new ethers.Contract(
-        parentAddress,
+        Config.PARENT_ADDRESS,
         PARENT_ABI,
         web3Provider
       );
@@ -669,7 +694,7 @@ function BoredApe({ login, logout }) {
 
     const web3Provider = Moralis.web3;
     const contract = new ethers.Contract(
-      parentAddress,
+      Config.PARENT_ADDRESS,
       PARENT_ABI,
       web3Provider
     );
@@ -695,7 +720,7 @@ function BoredApe({ login, logout }) {
 
     const options = {
       chain: 'rinkeby',
-      address: parentAddress,
+      address: Config.PARENT_ADDRESS,
       token_address: Config.BAYC_ADDRESS,
     };
     const nfts = await Web3Api.account.getNFTsForContract(options);
@@ -710,6 +735,25 @@ function BoredApe({ login, logout }) {
     });
     setDepositedBayc(filtered)
   }, [baycCount])
+
+  useEffect(async () => {
+    if(depositedBayc.length === 0) return;
+
+    const web3Provider = Moralis.web3;
+    const grape_contract = new ethers.Contract(
+      Config.GRAPE_ADDRESS,
+      GRAPE_ABI,
+      web3Provider
+    );
+
+    const signer = web3Provider.getSigner();
+    const instance = await grape_contract.connect(signer);
+    let amount = await instance.getClaimableTokenAmount(account)
+    console.log(amount / 10**18)
+    if(amount / 10**18 > 0) {
+      setClaimableAmount(amount / 10**18)
+    }
+  }, [depositedBayc, isTx])
 
   return (
     <div
@@ -883,14 +927,15 @@ function BoredApe({ login, logout }) {
                             </p>
                           </div>
                           <button className="deposited-box_button"
-                            onClick={() => withdrawBayc(item.token_id, item.bayc_id)}>
+                            onClick={() => handleClaimOrWithdraw(item.token_id, item.bayc_id)}>
                             {
-                              apeIds.indexOf(item.token_id) > -1 ? (
+                              claimableAmount > 0 ? (
                                 <>
                                   Claim
                                 </>
                               )
                                 :
+
                                 (
                                   <>
                                     Withdraw
